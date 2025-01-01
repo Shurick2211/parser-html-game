@@ -1,7 +1,5 @@
 package nimko.com.paserhtmlgame.service;
 
-import static java.lang.Thread.sleep;
-
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Locator;
@@ -15,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.yaml.snakeyaml.util.Tuple;
-import reactor.util.function.Tuple2;
 
 @Service
 @RequiredArgsConstructor
@@ -47,16 +44,16 @@ public class PlaywrightService {
   }
 
   public Map<String, String> getPullHref(Page page) {
-      hrefs = new LinkedHashMap<>();
-      locator = page.locator("li > a.as-game-box");
-      int count = locator.count();
-      for (int i = 0; i < count; i++) {
-        String href = locator.nth(i).getAttribute("href");
-        String name = locator.nth(i).textContent();
-        if (href != null && name != null) {
-          hrefs.put(name, href);
-        }
+    hrefs = new LinkedHashMap<>();
+    locator = page.locator("li > a.as-game-box");
+    int count = locator.count();
+    for (int i = 0; i < count; i++) {
+      String href = locator.nth(i).getAttribute("href");
+      String name = locator.nth(i).textContent();
+      if (href != null && name != null) {
+        hrefs.put(name, href);
       }
+    }
     return hrefs;
   }
 
@@ -66,14 +63,15 @@ public class PlaywrightService {
     Locator iframeLocator = pageOfGame.locator("iframe#gameframe");
     String text = href;
     try {
-      Locator firstParagraph = pageOfGame.locator("div.game-description > div.game-description-inner > p").first();
-      text = firstParagraph.textContent();
+      Locator firstParagraph = pageOfGame.locator(
+              "body > div.container > div.container-inner > div.content-main > div.game-description > div.game-description-inner")
+          .first();
+      text = firstParagraph.innerHTML();
     } catch (Exception e) {
       log.error("{}.getGameSrc() - Parsing error for {}", getClass().getSimpleName(), href);
     }
     return new Tuple<>(iframeLocator.getAttribute("data-src"), text);
   }
-
 
   @PreDestroy
   private void tearDown() {

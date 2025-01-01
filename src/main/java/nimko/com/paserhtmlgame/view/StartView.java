@@ -16,7 +16,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.theme.lumo.LumoUtility.Background;
 import com.vaadin.flow.theme.lumo.LumoUtility.FontWeight;
-import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin.Right;
 import jakarta.annotation.PostConstruct;
 import java.util.Map;
@@ -78,7 +77,8 @@ public class StartView extends AppLayout {
         link.setHref(gameData._1().toString());
         link.setText(gameData._1().toString());
         if (!gameData._2().toString().startsWith("https")) {
-          text.add(gameData._2().toString());
+          text.getElement().setProperty("innerHTML", gameData._2().toString());
+         // text.add(gameData._2().toString());
           textButton.setVisible(false);
         } else {
           text.add(new Anchor(gameData._2().toString(), gameData._2().toString()));
