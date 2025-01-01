@@ -1,0 +1,9 @@
+vaadin:
+  launch-browser: true
+
+spring:
+  application:
+    name: paser-html-game
+
+server:
+  port: 8080
