@@ -1,5 +1,7 @@
 package nimko.com.paserhtmlgame.service;
 
+import static java.lang.Thread.sleep;
+
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType.LaunchOptions;
 import com.microsoft.playwright.Locator;
@@ -12,14 +14,18 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.yaml.snakeyaml.util.Tuple;
+import reactor.util.function.Tuple2;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PlaywrightService {
 
-  protected Playwright playwright;
-  protected Browser browser;
+  private Playwright playwright;
+  private Browser browser;
+  private Map<String, String> hrefs;
+  private Locator locator;
 
   @PostConstruct
   private void setUp() {
@@ -27,7 +33,7 @@ public class PlaywrightService {
       playwright = Playwright.create();
     }
     if (browser == null) {
-      browser = playwright.chromium().launch(
+      browser = playwright.webkit().launch(
           new LaunchOptions().setHeadless(true)
       );
     }
@@ -35,28 +41,39 @@ public class PlaywrightService {
 
   public Page openPage(String url) {
     var page = browser.newPage();
-    page.setDefaultTimeout(6000);
+    page.setDefaultTimeout(30000);
     page.navigate(url);
     return page;
   }
 
   public Map<String, String> getPullHref(Page page) {
-    Map<String, String> hrefs = new LinkedHashMap<>();
-    Locator locator = page.locator("li > a.as-game-box");
-    int count = locator.count();
-
-    for (int i = 0; i < count; i++) {
-      String href = locator.nth(i).getAttribute("href");
-      String name = locator.nth(i).textContent();
-      if (href != null && name != null) {
-        var pageOfGame = openPage(href);
-        Locator iframeLocator = pageOfGame.locator("iframe#gameframe");
-        String dataSrc = iframeLocator.getAttribute("data-src");
-        hrefs.put(name, dataSrc);
+      hrefs = new LinkedHashMap<>();
+      locator = page.locator("li > a.as-game-box");
+      int count = locator.count();
+      for (int i = 0; i < count; i++) {
+        String href = locator.nth(i).getAttribute("href");
+        String name = locator.nth(i).textContent();
+        if (href != null && name != null) {
+          hrefs.put(name, href);
+        }
       }
-    }
     return hrefs;
   }
+
+
+  public Tuple getGameSrc(String href) {
+    var pageOfGame = openPage(href);
+    Locator iframeLocator = pageOfGame.locator("iframe#gameframe");
+    String text = href;
+    try {
+      Locator firstParagraph = pageOfGame.locator("div.game-description > div.game-description-inner > p").first();
+      text = firstParagraph.textContent();
+    } catch (Exception e) {
+      log.error("{}.getGameSrc() - Parsing error for {}", getClass().getSimpleName(), href);
+    }
+    return new Tuple<>(iframeLocator.getAttribute("data-src"), text);
+  }
+
 
   @PreDestroy
   private void tearDown() {
