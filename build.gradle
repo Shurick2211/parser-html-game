@@ -1,3 +1,11 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { setUrl("https://maven.vaadin.com/vaadin-prereleases") }
+        maven { setUrl("https://repo.spring.io/milestone") }
+    }
+}
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.4.1'
@@ -15,8 +23,9 @@ java {
 }
 
 configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
+    developmentOnly
+    runtimeClasspath {
+        extendsFrom developmentOnly
     }
 }
 
