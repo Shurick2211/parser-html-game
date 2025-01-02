@@ -54,7 +54,6 @@ public class PlaywrightService {
         hrefs.put(name, href);
       }
     }
-    page.close();
     return hrefs;
   }
 

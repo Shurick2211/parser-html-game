@@ -89,6 +89,7 @@ public class StartView extends AppLayout {
           .limit(AUTO_SCAN_NUM - autoScanContent.size())
           .forEach(e -> autoScanContent.put(e.getKey(), e.getValue()));
     }
+    content = autoScanContent;
     var parseButton = new Button("Parse", VaadinIcon.BROWSER.create(),
         e -> {
           createParsePanel(count.getAndIncrement(), false);
