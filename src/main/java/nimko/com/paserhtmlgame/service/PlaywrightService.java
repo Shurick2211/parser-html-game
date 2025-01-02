@@ -21,8 +21,6 @@ public class PlaywrightService {
 
   private Playwright playwright;
   private Browser browser;
-  private Map<String, String> hrefs;
-  private Locator locator;
 
   @PostConstruct
   private void setUp() {
@@ -44,8 +42,8 @@ public class PlaywrightService {
   }
 
   public Map<String, String> getPullHref(Page page) {
-    hrefs = new LinkedHashMap<>();
-    locator = page.locator("li > a.as-game-box");
+    Map<String, String> hrefs = new LinkedHashMap<>();
+    Locator locator = page.locator("li > a.as-game-box");
     int count = locator.count();
     for (int i = 0; i < count; i++) {
       String href = locator.nth(i).getAttribute("href");
@@ -70,7 +68,6 @@ public class PlaywrightService {
     } catch (Exception e) {
       log.error("{}.getGameSrc() - Parsing error for {}", getClass().getSimpleName(), href);
     }
-    pageOfGame.close();
     return new Tuple<>(iframeLocator.getAttribute("data-src"), text);
   }
 
@@ -94,7 +91,6 @@ public class PlaywrightService {
     var result = page.innerText("div.games")
         .contains("К сожалению, мы не нашли ни одной игры с названием");
     log.info("Res - {}", result);
-    page.close();
     return result;
   }
 }
