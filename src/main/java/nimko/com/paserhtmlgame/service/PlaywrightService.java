@@ -2,14 +2,12 @@ package nimko.com.paserhtmlgame.service;
 
 import com.microsoft.playwright.Browser;
 import com.microsoft.playwright.BrowserType.LaunchOptions;
-import com.microsoft.playwright.ElementHandle;
 import com.microsoft.playwright.Locator;
 import com.microsoft.playwright.Page;
 import com.microsoft.playwright.Playwright;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,11 +54,12 @@ public class PlaywrightService {
         hrefs.put(name, href);
       }
     }
+    page.close();
     return hrefs;
   }
 
 
-  public Tuple getGameSrc(String href) {
+  public Tuple<String, String> getGameSrc(String href) {
     var pageOfGame = openPage(href);
     Locator iframeLocator = pageOfGame.locator("iframe#gameframe");
     String text = href;
@@ -72,6 +71,7 @@ public class PlaywrightService {
     } catch (Exception e) {
       log.error("{}.getGameSrc() - Parsing error for {}", getClass().getSimpleName(), href);
     }
+    pageOfGame.close();
     return new Tuple<>(iframeLocator.getAttribute("data-src"), text);
   }
 
@@ -86,14 +86,16 @@ public class PlaywrightService {
     log.info("{}.tearDown() - Done", getClass().getSimpleName());
   }
 
-  public boolean checkGame(String url, String key) {
+  public boolean checkNoGames(String url, String key) {
     var page = openPage(url);
     page.click("a.but_search[aria-label='Поиск...']");
 
     page.fill("input.find[name='find']", key);
     page.press("input.find[name='find']", "Enter");
-    var result = page.innerText("div.games").contains("К сожалению, мы не нашли ни одной игры с названием");
+    var result = page.innerText("div.games")
+        .contains("К сожалению, мы не нашли ни одной игры с названием");
     log.info("Res - {}", result);
+    page.close();
     return result;
   }
 }
