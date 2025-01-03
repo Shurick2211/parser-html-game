@@ -42,21 +42,24 @@ public class StartView extends AppLayout {
 
   private Div contentDiv;
 
-  private final Div pageDiv = new Div();
+  private Div pageDiv;
 
   private Map<String, String> content;
   private Map<String, String> autoScanContent;
 
   private final static int AUTO_SCAN_NUM = 5;
-  private int pageCount = 1;
+  private int pageCount;
   private AtomicInteger count;
-
-  private Button nextPage;
 
   private Div parseDiv;
 
+  private Span total;
+
   @PostConstruct
   private void init() {
+    pageCount = 1;
+    pageDiv = new Div("Page - _");
+    total = new Span();
     autoScanContent = new LinkedHashMap<>();
     addClassNames(FontSize.LARGE, Width.FULL);
     count = new AtomicInteger();
@@ -66,53 +69,55 @@ public class StartView extends AppLayout {
     var parseButton = new Button("Parse", VaadinIcon.BROWSER.create(),
         e -> getPage(count.getAndIncrement()));
     parseDiv = new Div(parseButton);
-    nextPage = new Button("Next page", VaadinIcon.ARROW_RIGHT.create(), e -> nextPage());
-    var controlLayout = new HorizontalLayout(parseDiv, pageDiv, nextPage,
-        new Button("Auto", VaadinIcon.SEARCH.create(), e -> autoSearch()));
+    Button nextPage = new Button("Next page", VaadinIcon.ARROW_RIGHT.create(), e -> nextPage());
+    var buttonAuto = new Button("Auto", VaadinIcon.SEARCH.create(), e -> autoSearch());
+    buttonAuto.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+    var buttonClear = new Button("Clear", VaadinIcon.DEL.create(), e -> init());
+    buttonClear.addThemeVariants(ButtonVariant.LUMO_ERROR);
+    var mainControl = new HorizontalLayout(pageDiv, nextPage, buttonAuto, buttonClear);
+    mainControl.addClassNames(AlignItems.CENTER);
+    var controlLayout = new HorizontalLayout(parseDiv, total);
     controlLayout.addClassNames(AlignItems.CENTER);
-    VerticalLayout layout = new VerticalLayout(new H2("Hello worker!"), controlLayout,
-        contentDiv);
+    VerticalLayout layout = new VerticalLayout(new H2("Hello worker!"),
+        mainControl, controlLayout, contentDiv);
     layout.setWidthFull();
     setContent(layout);
-
   }
 
   protected void autoSearch() {
-    getUI().ifPresent(ui -> ui.access(() -> {
-      parseDiv.removeAll();
-      contentDiv.removeAll();
-      count.set(0);
-      ui.push();
-      nextPage.setEnabled(false);
-    }));
-
-    //pageCount = 1;
-
+    contentDiv.removeAll();
+    count.set(0);
+    boolean notFirst = false;
     while (autoScanContent.size() < AUTO_SCAN_NUM) {
-      nextPage();
+      if (notFirst) {
+        nextPage();
+      }
       content.entrySet().stream().filter(e -> checkIn(e.getKey()))
           .limit(AUTO_SCAN_NUM - autoScanContent.size())
           .forEach(e -> autoScanContent.put(e.getKey(), e.getValue()));
+      notFirst = true;
     }
+    total.setText("Найдено - " + autoScanContent.size());
     content = autoScanContent;
+    parseDiv.removeAll();
     var parseButton = new Button("Parse", VaadinIcon.BROWSER.create(),
         e -> {
           createParsePanel(count.getAndIncrement(), false);
-          if (count.get() == AUTO_SCAN_NUM-1){
-            nextPage.setEnabled(true);
+          if (count.get() == AUTO_SCAN_NUM) {
+            e.getSource().setEnabled(false);
           }
         });
     parseDiv.add(parseButton);
   }
 
   private void nextPage() {
+    contentDiv.removeAll();
     this.count.set(0);
     Page page = playwrightService.openPage(getUrl(pageCount++));
     content = playwrightService.getPullHref(page);
   }
 
   private void getPage(int count) {
-    contentDiv.removeAll();
     if (content == null || (count != 0 && count % content.size() == 0)) {
       nextPage();
     }
@@ -159,7 +164,12 @@ public class StartView extends AppLayout {
 
   private boolean checkIn(String key) {
     var url = "https://www.najox.com/ru/";
-    return playwrightService.checkNoGames(url, key);
+    try{
+      return playwrightService.checkNoGames(url, key);
+    } catch (Exception e){
+      log.error("{}.checkIn() - Error check - {}, mess - {}", getClass().getSimpleName(), key, e.getMessage());
+    }
+    return false;
   }
 
   private String getUrl(int page) {

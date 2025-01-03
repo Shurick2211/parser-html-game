@@ -2,6 +2,7 @@ package nimko.com.paserhtmlgame;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.theme.Theme;
 import org.springframework.boot.SpringApplication;
@@ -16,4 +17,8 @@ public class PaserHtmlGameApplication implements AppShellConfigurator {
     SpringApplication.run(PaserHtmlGameApplication.class, args);
   }
 
+  @Override
+  public void configurePage(final AppShellSettings settings) {
+    settings.addFavIcon("icon", "icons/favicon.ico", "64x64");
+  }
 }
