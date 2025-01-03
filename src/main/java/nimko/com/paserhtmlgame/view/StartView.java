@@ -47,7 +47,7 @@ public class StartView extends AppLayout {
   private Map<String, String> content;
   private Map<String, String> autoScanContent;
 
-  private final static int AUTO_SCAN_NUM = 5;
+  private final static int AUTO_SCAN_NUM = 10;
   private int pageCount;
   private AtomicInteger count;
 
@@ -85,6 +85,7 @@ public class StartView extends AppLayout {
   }
 
   protected void autoSearch() {
+    log.info("Start AUTO");
     contentDiv.removeAll();
     count.set(0);
     boolean notFirst = false;
