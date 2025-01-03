@@ -47,7 +47,7 @@ public class StartView extends AppLayout {
   private Map<String, String> content;
   private Map<String, String> autoScanContent;
 
-  private final static int AUTO_SCAN_NUM = 20;
+  private final static int AUTO_SCAN_NUM = 5;
   private int pageCount = 1;
   private AtomicInteger count;
 
@@ -78,11 +78,16 @@ public class StartView extends AppLayout {
   }
 
   protected void autoSearch() {
-    parseDiv.removeAll();
-    contentDiv.removeAll();
-    count.set(0);
-    pageCount = 1;
-    nextPage.setEnabled(false);
+    getUI().ifPresent(ui -> ui.access(() -> {
+      parseDiv.removeAll();
+      contentDiv.removeAll();
+      count.set(0);
+      ui.push();
+      nextPage.setEnabled(false);
+    }));
+
+    //pageCount = 1;
+
     while (autoScanContent.size() < AUTO_SCAN_NUM) {
       nextPage();
       content.entrySet().stream().filter(e -> checkIn(e.getKey()))
@@ -139,13 +144,13 @@ public class StartView extends AppLayout {
       text.addClassNames(Background.CONTRAST_10);
       textButton.addClickListener(e -> {
         var gameData = playwrightService.getGameSrc(entry.getValue());
-        link.setHref(gameData._1());
-        link.setText(gameData._1());
-        if (!gameData._2().startsWith("https")) {
-          text.getElement().setProperty("innerHTML", gameData._2());
+        link.setHref(gameData.getT1());
+        link.setText(gameData.getT1());
+        if (!gameData.getT2().startsWith("https")) {
+          text.getElement().setProperty("innerHTML", gameData.getT2());
           textButton.setVisible(false);
         } else {
-          text.add(new Anchor(gameData._2(), gameData._2()));
+          text.add(new Anchor(gameData.getT2(), gameData.getT2()));
         }
       });
       contentDiv.add(new Div(name, link, textButton, checkButton, text));

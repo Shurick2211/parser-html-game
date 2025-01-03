@@ -12,7 +12,9 @@ import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.yaml.snakeyaml.util.Tuple;
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
+
 
 @Service
 @RequiredArgsConstructor
@@ -56,7 +58,7 @@ public class PlaywrightService {
   }
 
 
-  public Tuple<String, String> getGameSrc(String href) {
+  public Tuple2<String, String> getGameSrc(String href) {
     var pageOfGame = openPage(href);
     Locator iframeLocator = pageOfGame.locator("iframe#gameframe");
     String text = href;
@@ -68,7 +70,7 @@ public class PlaywrightService {
     } catch (Exception e) {
       log.error("{}.getGameSrc() - Parsing error for {}", getClass().getSimpleName(), href);
     }
-    return new Tuple<>(iframeLocator.getAttribute("data-src"), text);
+    return Tuples.of(iframeLocator.getAttribute("data-src"), text);
   }
 
   @PreDestroy
@@ -91,6 +93,7 @@ public class PlaywrightService {
     var result = page.innerText("div.games")
         .contains("К сожалению, мы не нашли ни одной игры с названием");
     log.info("Res - {}", result);
+    page.close();
     return result;
   }
 }

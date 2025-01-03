@@ -8,13 +8,13 @@ buildscript {
 
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.4.1'
+    id 'org.springframework.boot' version '3.2.7'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.vaadin' version '24.6.0'
 }
 
 group = 'nimko.com'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1'
 
 java {
     toolchain {
@@ -45,6 +45,9 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'com.microsoft.playwright:playwright:1.45.0'
+    implementation 'com.flowingcode.vaadin.addons:error-window-vaadin:4.1.0'
+
+
 }
 
 dependencyManagement {
