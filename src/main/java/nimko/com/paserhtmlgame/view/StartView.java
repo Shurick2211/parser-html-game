@@ -58,7 +58,7 @@ public class StartView extends AppLayout {
   @PostConstruct
   private void init() {
     pageCount = 1;
-    pageDiv = new Div("Page - _");
+    pageDiv = new Div("Page - 1");
     total = new Span();
     autoScanContent = new LinkedHashMap<>();
     addClassNames(FontSize.LARGE, Width.FULL);
