@@ -11,6 +11,7 @@ plugins {
     id 'org.springframework.boot' version '3.2.7'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'com.vaadin' version '24.6.0'
+    id 'com.gorylenko.gradle-git-properties' version '2.4.0'
 }
 
 group = 'nimko.com'
@@ -37,6 +38,10 @@ ext {
     set('vaadinVersion', "24.6.0")
 }
 
+springBoot {
+    buildInfo()
+}
+
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.vaadin:vaadin-spring-boot-starter'
@@ -46,7 +51,7 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     implementation 'com.microsoft.playwright:playwright:1.45.0'
     implementation 'com.flowingcode.vaadin.addons:error-window-vaadin:4.1.0'
-
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 }
 

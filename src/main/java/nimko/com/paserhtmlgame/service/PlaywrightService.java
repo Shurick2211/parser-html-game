@@ -38,7 +38,7 @@ public class PlaywrightService {
 
   public Page openPage(String url) {
     var page = browser.newPage();
-    page.setDefaultTimeout(30000);
+    page.setDefaultTimeout(15000);
     page.navigate(url);
     return page;
   }

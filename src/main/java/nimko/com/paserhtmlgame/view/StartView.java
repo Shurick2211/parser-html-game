@@ -19,6 +19,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
 import com.vaadin.flow.theme.lumo.LumoUtility.Background;
 import com.vaadin.flow.theme.lumo.LumoUtility.FontSize;
 import com.vaadin.flow.theme.lumo.LumoUtility.FontWeight;
+import com.vaadin.flow.theme.lumo.LumoUtility.JustifyContent;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin.Left;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin.Right;
 import com.vaadin.flow.theme.lumo.LumoUtility.Width;
@@ -28,8 +29,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import nimko.com.paserhtmlgame.service.AppSystemService;
 import nimko.com.paserhtmlgame.service.PlaywrightService;
-
 
 @PageTitle("Start page")
 @Route(value = "start-page")
@@ -39,20 +40,16 @@ import nimko.com.paserhtmlgame.service.PlaywrightService;
 public class StartView extends AppLayout {
 
   private final PlaywrightService playwrightService;
+  private final AppSystemService systemService;
 
   private Div contentDiv;
-
   private Div pageDiv;
-
   private Map<String, String> content;
   private Map<String, String> autoScanContent;
-
   private final static int AUTO_SCAN_NUM = 10;
   private int pageCount;
   private AtomicInteger count;
-
   private Div parseDiv;
-
   private Span total;
 
   @PostConstruct
@@ -78,7 +75,16 @@ public class StartView extends AppLayout {
     mainControl.addClassNames(AlignItems.CENTER);
     var controlLayout = new HorizontalLayout(parseDiv, total);
     controlLayout.addClassNames(AlignItems.CENTER);
-    VerticalLayout layout = new VerticalLayout(new H2("Hello worker!"),
+
+    var versionDiv = new HorizontalLayout(new Button("Version", VaadinIcon.PACKAGE.create(),
+        e -> systemService.createVersionDialog().open()));
+    versionDiv.setWidthFull();
+    versionDiv.addClassNames(AlignItems.CENTER, JustifyContent.END);
+
+    var firstLayout = new HorizontalLayout(new H2("Hello worker!"), versionDiv);
+    firstLayout.setWidthFull();
+
+    VerticalLayout layout = new VerticalLayout(firstLayout,
         mainControl, controlLayout, contentDiv);
     layout.setWidthFull();
     setContent(layout);
@@ -168,10 +174,11 @@ public class StartView extends AppLayout {
 
   private boolean checkIn(String key) {
     var url = "https://www.najox.com/ru/";
-    try{
+    try {
       return playwrightService.checkNoGames(url, key);
-    } catch (Exception e){
-      log.error("{}.checkIn() - Error check - {}, mess - {}", getClass().getSimpleName(), key, e.getMessage());
+    } catch (Exception e) {
+      log.error("{}.checkIn() - Error check - {}, mess - {}", getClass().getSimpleName(), key,
+          e.getMessage());
     }
     return false;
   }
@@ -181,4 +188,6 @@ public class StartView extends AppLayout {
     return page == 1 ? "https://sprunkin.com/trending-games"
         : String.format("https://sprunkin.com/trending-games/page/%d/", page);
   }
+
+
 }
