@@ -30,7 +30,7 @@ public class PlaywrightService {
       playwright = Playwright.create();
     }
     if (browser == null) {
-      browser = playwright.firefox().launch(
+      browser = playwright.chromium().launch(
           new LaunchOptions().setHeadless(true)
       );
     }

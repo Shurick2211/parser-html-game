@@ -152,11 +152,14 @@ public class StartView extends AppLayout {
         var gameData = playwrightService.getGameSrc(entry.getValue());
         link.setHref(gameData.getT1());
         link.setText(gameData.getT1());
+        link.setTarget("_blank");
         if (!gameData.getT2().startsWith("https")) {
           text.getElement().setProperty("innerHTML", gameData.getT2());
           textButton.setVisible(false);
         } else {
-          text.add(new Anchor(gameData.getT2(), gameData.getT2()));
+          var a = new Anchor(gameData.getT2(), gameData.getT2());
+          a.setTarget("_blank");
+          text.add(a);
         }
       });
       contentDiv.add(new Div(name, link, textButton, checkButton, text));
