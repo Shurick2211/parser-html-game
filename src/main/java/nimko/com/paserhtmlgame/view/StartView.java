@@ -232,7 +232,6 @@ public class StartView extends AppLayout {
         os.write(text.trim().getBytes());
         os.flush();
       }
-      log.info("Text copied to clipboard: {}",text);
     } catch (IOException e) {
       log.error("{}.copeInBuffer() - Failed to copy text to clipboard.", getClass().getSimpleName(),
           e);
