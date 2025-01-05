@@ -26,6 +26,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Width;
 import jakarta.annotation.PostConstruct;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,6 +52,7 @@ public class StartView extends AppLayout {
   private AtomicInteger count;
   private Div parseDiv;
   private Span total;
+  private Button parseButton;
 
   @PostConstruct
   private void init() {
@@ -63,7 +65,7 @@ public class StartView extends AppLayout {
     contentDiv = new Div();
     contentDiv.setWidthFull();
     getPage(count.getAndIncrement());
-    var parseButton = new Button("Parse", VaadinIcon.BROWSER.create(),
+    parseButton = new Button("Parse", VaadinIcon.BROWSER.create(),
         e -> getPage(count.getAndIncrement()));
     parseDiv = new Div(parseButton);
     Button nextPage = new Button("Next page", VaadinIcon.ARROW_RIGHT.create(), e -> nextPage());
@@ -106,15 +108,19 @@ public class StartView extends AppLayout {
     }
     total.setText("Найдено - " + autoScanContent.size());
     content = autoScanContent;
-    parseDiv.removeAll();
-    var parseButton = new Button("Parse", VaadinIcon.BROWSER.create(),
-        e -> {
-          createParsePanel(count.getAndIncrement(), false);
-          if (count.get() == AUTO_SCAN_NUM) {
-            e.getSource().setEnabled(false);
-          }
-        });
-    parseDiv.add(parseButton);
+ //   parseDiv.removeAll();
+//    var parseButton = new Button("Parse", VaadinIcon.BROWSER.create(),
+//        e -> {
+//          createParsePanel(count.getAndIncrement(), false);
+//          if (count.get() == AUTO_SCAN_NUM) {
+//            e.getSource().setEnabled(false);
+//          }
+//        });
+//    parseDiv.add(parseButton);
+    parseButton.setEnabled(false);
+    for(int i =0; i < AUTO_SCAN_NUM; i++){
+      createParsePanel(count.getAndIncrement(), false);
+    }
   }
 
   private void nextPage() {
@@ -132,6 +138,7 @@ public class StartView extends AppLayout {
   }
 
   private void createParsePanel(int count, boolean needCheck) {
+    var panelLayout = new VerticalLayout();
     content.entrySet().stream().skip(count).limit(1).forEach(entry -> {
       var link = new Anchor();
       link.addClassNames(Right.MEDIUM);
@@ -139,6 +146,7 @@ public class StartView extends AppLayout {
       name.addClassNames(FontWeight.BOLD, Right.MEDIUM);
       var textButton = new Button("Text");
       var checkButton = new Button("Проверить!");
+      var disabledButton = new Button("", VaadinIcon.TRASH.create(), e -> panelLayout.setVisible(false));
       checkButton.setEnabled(needCheck);
       checkButton.addClassNames(Left.MEDIUM);
       checkButton.addClickListener(e -> {
@@ -154,22 +162,28 @@ public class StartView extends AppLayout {
       });
       var text = new Paragraph();
       text.addClassNames(Background.CONTRAST_10);
-      textButton.addClickListener(e -> {
-        var gameData = playwrightService.getGameSrc(entry.getValue());
-        link.setHref(gameData.getT1());
-        link.setText(gameData.getT1());
-        link.setTarget("_blank");
-        if (!gameData.getT2().startsWith("https")) {
-          text.getElement().setProperty("innerHTML", gameData.getT2());
-          textButton.setVisible(false);
-        } else {
-          var a = new Anchor(gameData.getT2(), gameData.getT2());
-          a.setTarget("_blank");
-          text.add(a);
-        }
-      });
-      contentDiv.add(new Div(name, link, textButton, checkButton, text));
+      textButton.addClickListener(e ->  parseText(entry, link, text, textButton));
+      panelLayout.add(new HorizontalLayout(name, link, textButton, checkButton, disabledButton), text);
+      contentDiv.add(panelLayout);
+      if (!needCheck){
+        textButton.getElement().callJsFunction("click");
+      }
     });
+  }
+
+  private void parseText(Entry<String, String> entry, Anchor link, Paragraph text, Button textButton) {
+    var gameData = playwrightService.getGameSrc(entry.getValue());
+    link.setHref(gameData.getT1());
+    link.setText(gameData.getT1());
+    link.setTarget("_blank");
+    if (!gameData.getT2().startsWith("https")) {
+      text.getElement().setProperty("innerHTML", gameData.getT2());
+      textButton.setVisible(false);
+    } else {
+      var a = new Anchor(gameData.getT2(), gameData.getT2());
+      a.setTarget("_blank");
+      text.add(a);
+    }
   }
 
   private boolean checkIn(String key) {
