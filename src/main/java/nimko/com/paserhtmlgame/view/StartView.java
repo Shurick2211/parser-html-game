@@ -223,5 +223,6 @@ public class StartView extends AppLayout {
     Notification notification = new Notification("Скопировано в буфер обмена!");
     notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     notification.setDuration(2000);
+    notification.open();
   }
 }
