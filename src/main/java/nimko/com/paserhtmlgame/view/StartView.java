@@ -229,10 +229,10 @@ public class StartView extends AppLayout {
     try {
       Process process = Runtime.getRuntime().exec("cmd /c clip");
       try (OutputStream os = process.getOutputStream()) {
-        os.write(text.getBytes());
+        os.write(text.trim().getBytes());
         os.flush();
       }
-      System.out.println("Text copied to clipboard: " + text);
+      log.info("Text copied to clipboard: {}",text);
     } catch (IOException e) {
       log.error("{}.copeInBuffer() - Failed to copy text to clipboard.", getClass().getSimpleName(),
           e);
