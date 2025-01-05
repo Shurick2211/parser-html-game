@@ -191,10 +191,11 @@ public class StartView extends AppLayout {
   private void parseText(Entry<String, String> entry, Anchor link, Paragraph text,
       Button textButton) {
     var gameData = playwrightService.getGameSrc(entry.getValue());
-    link.setHref(gameData.getT1());
-    link.setText(gameData.getT1());
+    String href = gameData.getT1();
+    link.setHref(href);
+    link.setText(href);
     link.setTarget("_blank");
-    link.addAttachListener(e -> copyInBuffer(gameData.getT1()));
+    link.addAttachListener(e -> copyInBuffer(href));
     if (!gameData.getT2().startsWith("https")) {
       text.getElement().setProperty("innerHTML", gameData.getT2());
       textButton.setVisible(false);
