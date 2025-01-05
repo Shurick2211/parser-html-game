@@ -12,6 +12,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.Notification.Position;
 import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
@@ -30,6 +31,8 @@ import jakarta.annotation.PostConstruct;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -114,7 +117,7 @@ public class StartView extends AppLayout {
     }
     total.setText("Найдено - " + autoScanContent.size());
     content = autoScanContent;
- //   parseDiv.removeAll();
+    //   parseDiv.removeAll();
 //    var parseButton = new Button("Parse", VaadinIcon.BROWSER.create(),
 //        e -> {
 //          createParsePanel(count.getAndIncrement(), false);
@@ -124,7 +127,7 @@ public class StartView extends AppLayout {
 //        });
 //    parseDiv.add(parseButton);
     parseButton.setEnabled(false);
-    for(int i =0; i < AUTO_SCAN_NUM; i++){
+    for (int i = 0; i < AUTO_SCAN_NUM; i++) {
       createParsePanel(count.getAndIncrement(), false);
     }
   }
@@ -155,7 +158,7 @@ public class StartView extends AppLayout {
       var checkButton = new Button("Проверить!");
       var disabledButton = new Button("", VaadinIcon.TRASH.create(), e -> {
         panelLayout.setVisible(false);
-        if (contentDiv.getChildren().noneMatch(Component::isVisible)){
+        if (contentDiv.getChildren().noneMatch(Component::isVisible)) {
           parseButton.setEnabled(true);
         }
       });
@@ -175,16 +178,18 @@ public class StartView extends AppLayout {
       });
       var text = new Paragraph();
       text.addClassNames(Background.CONTRAST_10);
-      textButton.addClickListener(e ->  parseText(entry, link, text, textButton));
-      panelLayout.add(new HorizontalLayout(name, link, textButton, checkButton, disabledButton), text);
+      textButton.addClickListener(e -> parseText(entry, link, text, textButton));
+      panelLayout.add(new HorizontalLayout(name, link, textButton, checkButton, disabledButton),
+          text);
       contentDiv.add(panelLayout);
-      if (!needCheck){
+      if (!needCheck) {
         textButton.getElement().callJsFunction("click");
       }
     });
   }
 
-  private void parseText(Entry<String, String> entry, Anchor link, Paragraph text, Button textButton) {
+  private void parseText(Entry<String, String> entry, Anchor link, Paragraph text,
+      Button textButton) {
     var gameData = playwrightService.getGameSrc(entry.getValue());
     link.setHref(gameData.getT1());
     link.setText(gameData.getT1());
@@ -216,12 +221,21 @@ public class StartView extends AppLayout {
         : String.format("https://sprunkin.com/trending-games/page/%d/", page);
   }
 
-  private void copyInBuffer(String text){
-    StringSelection stringSelection = new StringSelection(text);
-    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-    clipboard.setContents(stringSelection, null);
+  private void copyInBuffer(String text) {
+    try {
+      Process process = Runtime.getRuntime().exec("cmd /c clip");
+      try (OutputStream os = process.getOutputStream()) {
+        os.write(text.getBytes());
+        os.flush();
+      }
+      System.out.println("Text copied to clipboard: " + text);
+    } catch (IOException e) {
+      log.error("{}.copeInBuffer() - Failed to copy text to clipboard.", getClass().getSimpleName(),
+          e);
+    }
     Notification notification = new Notification("Скопировано в буфер обмена!");
     notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+    notification.setPosition(Position.BOTTOM_CENTER);
     notification.setDuration(2000);
     notification.open();
   }
