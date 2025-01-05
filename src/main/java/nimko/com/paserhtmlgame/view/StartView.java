@@ -195,7 +195,9 @@ public class StartView extends AppLayout {
     link.setHref(href);
     link.setText(href);
     link.setTarget("_blank");
-    link.addAttachListener(e -> copyInBuffer(href));
+    link.getElement().addEventListener("click", event ->
+        copyInBuffer(link.getText())
+    );
     if (!gameData.getT2().startsWith("https")) {
       text.getElement().setProperty("innerHTML", gameData.getT2());
       textButton.setVisible(false);
