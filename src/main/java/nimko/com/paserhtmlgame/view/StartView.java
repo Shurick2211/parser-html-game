@@ -1,6 +1,7 @@
 package nimko.com.paserhtmlgame.view;
 
 import com.microsoft.playwright.Page;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -10,6 +11,8 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.notification.NotificationVariant;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -24,6 +27,9 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Margin.Left;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin.Right;
 import com.vaadin.flow.theme.lumo.LumoUtility.Width;
 import jakarta.annotation.PostConstruct;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -143,10 +149,17 @@ public class StartView extends AppLayout {
       var link = new Anchor();
       link.addClassNames(Right.MEDIUM);
       var name = new Span(String.format("%d %s:", count + 1, entry.getKey()));
+      name.addClickListener(e -> copyInBuffer(entry.getKey()));
       name.addClassNames(FontWeight.BOLD, Right.MEDIUM);
       var textButton = new Button("Text");
       var checkButton = new Button("Проверить!");
-      var disabledButton = new Button("", VaadinIcon.TRASH.create(), e -> panelLayout.setVisible(false));
+      var disabledButton = new Button("", VaadinIcon.TRASH.create(), e -> {
+        panelLayout.setVisible(false);
+        if (contentDiv.getChildren().noneMatch(Component::isVisible)){
+          parseButton.setEnabled(true);
+        }
+      });
+      disabledButton.addThemeVariants(ButtonVariant.LUMO_ERROR);
       checkButton.setEnabled(needCheck);
       checkButton.addClassNames(Left.MEDIUM);
       checkButton.addClickListener(e -> {
@@ -203,5 +216,12 @@ public class StartView extends AppLayout {
         : String.format("https://sprunkin.com/trending-games/page/%d/", page);
   }
 
-
+  private void copyInBuffer(String text){
+    StringSelection stringSelection = new StringSelection(text);
+    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+    clipboard.setContents(stringSelection, null);
+    Notification notification = new Notification("Скопировано в буфер обмена!");
+    notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
+    notification.setDuration(2000);
+  }
 }
